@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+import sys
+
+import pygohcl
+
+
+def main():
+    print(pygohcl.Parse(sys.stdin.read()))
+
+if __name__ == "__main__":
+    main()
