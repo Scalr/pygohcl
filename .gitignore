@@ -1,0 +1,6 @@
+*.so
+venv
+.eggs
+_pygohcl.py
+build
+dist
