@@ -3,9 +3,17 @@ type: docker
 name: default
 
 steps:
+  - name: fetch
+    image: alpine/git
+    commands:
+      - git fetch --tags
+    when:
+      event:
+        - tag
   - name: build
     image: larcher/manylinux-golang
     commands:
+      - git checkout $DRONE_TAG
       - ./build-wheels.sh
   - name: publish
     image: larcher/manylinux-golang
