@@ -7,3 +7,17 @@ steps:
     image: larcher/manylinux-golang
     commands:
       - ./build-wheels.sh
+  - name: publish
+    image: larcher/manylinux-golang
+    commands:
+      - pip install twine
+      - twine upload dist/*.whl
+    environment:
+      PATH: "$PATH:/opt/python/cp38-cp38/bin"
+      TWINE_PASSWORD:
+        from_secret: pypi_password
+      TWINE_USERNAME:
+        from_secret: pypi_username
+    when:
+      event:
+        - tag
