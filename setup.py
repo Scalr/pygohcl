@@ -11,9 +11,10 @@ os.chdir(os.path.dirname(sys.argv[0]) or ".")
 
 setup(
     name="pygohcl",
-    version="0.1",
+    version="0.1.1",
     description="Python bindings for Hashicorp HCL2 Go library",
     long_description=open("README.md", "rt").read(),
+    long_description_content_type="text/markdown",
     url="https://github.com/Scalr/pygohcl",
     author="Lee Archer",
     author_email="l.archer@scalr.com",

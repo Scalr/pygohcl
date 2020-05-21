@@ -4,3 +4,5 @@ venv
 _pygohcl.py
 build
 dist
+__pycache__
+*.egg-info
