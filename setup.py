@@ -11,7 +11,7 @@ os.chdir(os.path.dirname(sys.argv[0]) or ".")
 
 setup(
     name="pygohcl",
-    version="0.1.1",
+    use_scm_version=True,
     description="Python bindings for Hashicorp HCL2 Go library",
     long_description=open("README.md", "rt").read(),
     long_description_content_type="text/markdown",
@@ -27,7 +27,7 @@ setup(
     ],
     packages=find_packages(),
     install_requires=["cffi>=1.0.0"],
-    setup_requires=["cffi>=1.0.0", "setuptools-golang"],
+    setup_requires=["cffi>=1.0.0", "setuptools-golang", "setuptools_scm"],
     build_golang={"root": "github.com/Scalr/pygohcl"},
     ext_modules=[Extension("pygohcl", ["pygohcl.go"])],
     cffi_modules=["pygohcl/build_cffi.py:ffi",],
