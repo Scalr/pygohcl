@@ -1,0 +1,31 @@
+kind: pipeline
+type: docker
+name: default
+
+steps:
+  - name: fetch
+    image: alpine/git
+    commands:
+      - git fetch --tags
+    when:
+      event:
+        - tag
+  - name: build
+    image: scalrlabs/manylinux-golang
+    commands:
+      - git checkout $DRONE_TAG
+      - ./build-wheels.sh
+  - name: publish
+    image: scalrlabs/manylinux-golang
+    commands:
+      - pip install twine
+      - twine upload dist/*.whl
+    environment:
+      PATH: "$PATH:/opt/python/cp38-cp38/bin"
+      TWINE_PASSWORD:
+        from_secret: pypi_password
+      TWINE_USERNAME:
+        from_secret: pypi_username
+    when:
+      event:
+        - tag

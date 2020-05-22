@@ -1,0 +1,9 @@
+*.so
+venv
+.eggs
+_pygohcl.py
+build
+dist
+__pycache__
+*.egg-info
+.drone-secrets

@@ -1,2 +1,30 @@
 # pygohcl
-Python wrapper for hashicorp/hcl (v2).
+Python wrapper for [hashicorp/hcl](https://github.com/hashicorp/hcl) (v2).
+
+## Requirements
+The following versions are supported - 3.6, 3.7, 3.8.
+
+## Setup
+```sh
+pip install pygohcl
+```
+
+## Usage
+```py
+>>> import pygohcl
+>>> pygohcl.loads("""variable "docker_ports" {
+...   type = list(object({
+...     internal = number
+...     external = number
+...     protocol = string
+...   }))
+...   default = [
+...     {
+...       internal = 8300
+...       external = 8300
+...       protocol = "tcp"
+...     }
+...   ]
+... }""")
+{'variable': {'docker_ports': {'default': [{'external': 8300, 'internal': 8300, 'protocol': 'tcp'}], 'type': 'list(object({internal=numberexternal=numberprotocol=string}))'}}}
+```
