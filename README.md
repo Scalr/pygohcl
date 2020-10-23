@@ -28,3 +28,12 @@ pip install pygohcl
 ... }""")
 {'variable': {'docker_ports': {'default': [{'external': 8300, 'internal': 8300, 'protocol': 'tcp'}], 'type': 'list(object({internal=numberexternal=numberprotocol=string}))'}}}
 ```
+
+## Building locally
+You can use the following commands to build a wheel for your platform:
+```sh
+pip install wheel
+python setup.py bdist_wheel
+```
+
+The wheel will be available in `./dist/`.
