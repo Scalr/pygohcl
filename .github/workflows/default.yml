@@ -3,7 +3,7 @@ name: pygohcl python package
 on: [push]
 
 jobs:
-  test:
+  tests:
     name: tests
     runs-on: ubuntu-latest
     strategy:
@@ -11,39 +11,11 @@ jobs:
         python-version: [3.8]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r dev-requirements.txt
-    - name: Test with pytest for Python ${{ matrix.python-version }}
-      run: |
-        pytest --doctest-modules --junitxml=junit/test-results-${{ matrix.python-version }}.xml
-    - name: Upload pytest test results
-      uses: actions/upload-artifact@v2
-      with:
-        name: pytest-results-${{ matrix.python-version }}
-        path: junit/test-results-${{ matrix.python-version }}.xml
-      if: ${{ always() }}
-
-  upload:
-    name: upload
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: [tests]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Set up Python
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: ${{ matrix.python-version }}
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
@@ -51,14 +23,56 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install twine
-      - name: Build manylinux wheels
-        uses: RalfG/python-wheels-manylinux-build@v0.3.3
+          pip install -r dev-requirements.txt
+      - name: Install package
+        run: |
+          pip install -e .
+      - name: Test with pytest for Python ${{ matrix.python-version }}
+        run: |
+          pytest --doctest-modules -o junit_family=xunit2 --junitxml=junit/test-results-${{ matrix.python-version }}.xml
+      - name: Upload pytest test results
+        uses: actions/upload-artifact@v2
         with:
-          python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39'
+          name: pytest-results-${{ matrix.python-version }}
+          path: junit/test-results-${{ matrix.python-version }}.xml
+        if: ${{ always() }}
+
+  upload:
+    name: upload
+    # if: startsWith(github.ref, 'refs/tags/')
+    # needs: [tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.13"
+      - name: Install dependencies
+        run: |
+          /opt/python/cp38-cp38/bin/pip install twine
+      - name: Build manylinux package
+        run: |
+          GO_URL="https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz'
+          curl $GO_URL --silent --location | tar -xz
+          export PATH="go/bin:$PATH"
+          mkdir wheels
+          for py in $PYTHONS; do
+              "/opt/python/$py/bin/pip" wheel . --no-deps --w wheels
+          done
+          for whl in wheels/*.whl; do
+              auditwheel repair $whl -w wheels/
+          done
+          ls -al wheels
+        env:
+          GO_VERSION: 1.14.8
+          PYTHONS: cp36-cp36m cp37-cp37m cp38-cp38
       # - name: Publish wheels to PyPI
       #   env:
       #     TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
       #     TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       #   run: |
-      #     twine upload dist/*-manylinux*.whl
+      #     twine upload /dist/*-manylinux*.whl
