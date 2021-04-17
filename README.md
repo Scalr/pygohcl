@@ -1,3 +1,5 @@
+[![pygohcl python package](https://github.com/Scalr/pygohcl/actions/workflows/default.yml/badge.svg)](https://github.com/Scalr/pygohcl/actions/workflows/default.yml)
+
 # pygohcl
 Python wrapper for [hashicorp/hcl](https://github.com/hashicorp/hcl) (v2).
 
