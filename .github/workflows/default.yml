@@ -39,40 +39,25 @@ jobs:
 
   upload:
     name: upload
-    # if: startsWith(github.ref, 'refs/tags/')
-    # needs: [tests]
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [tests]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: "1.13"
       - name: Install dependencies
         run: |
-          /opt/python/cp38-cp38/bin/pip install twine
+          pip install twine
       - name: Build manylinux package
-        run: |
-          GO_URL="https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz'
-          curl $GO_URL --silent --location | tar -xz
-          export PATH="go/bin:$PATH"
-          mkdir wheels
-          for py in $PYTHONS; do
-              "/opt/python/$py/bin/pip" wheel . --no-deps --w wheels
-          done
-          for whl in wheels/*.whl; do
-              auditwheel repair $whl -w wheels/
-          done
-          ls -al wheels
+        uses: RalfG/python-wheels-manylinux-build@v0.3.3
+        with:
+          python-versions: 'cp36-cp36m cp37-cp37m cp38-cp3'
+          pre-build-command: source pre-build-command.sh
+      - name: Publish wheels to PyPI
         env:
-          GO_VERSION: 1.14.8
-          PYTHONS: cp36-cp36m cp37-cp37m cp38-cp38
-      # - name: Publish wheels to PyPI
-      #   env:
-      #     TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-      #     TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      #   run: |
-      #     twine upload /dist/*-manylinux*.whl
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          twine upload /dist/*-manylinux*.whl
