@@ -1,8 +1,10 @@
+[![pygohcl python package](https://github.com/Scalr/pygohcl/actions/workflows/default.yml/badge.svg)](https://github.com/Scalr/pygohcl/actions/workflows/default.yml)
+
 # pygohcl
 Python wrapper for [hashicorp/hcl](https://github.com/hashicorp/hcl) (v2).
 
 ## Requirements
-The following versions are supported - 3.6, 3.7, 3.8.
+The following versions are supported - 3.6, 3.7, 3.8, 3.9.
 
 ## Setup
 ```sh
