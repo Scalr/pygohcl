@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7, 3.8, 3.9]
 
     steps:
       - uses: actions/checkout@v2
@@ -53,7 +53,7 @@ jobs:
       - name: Build manylinux package
         uses: RalfG/python-wheels-manylinux-build@v0.3.3
         with:
-          python-versions: 'cp36-cp36m cp37-cp37m cp38-cp3'
+          python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39'
           pre-build-command: source pre-build-command.sh
       - name: Publish wheels to PyPI
         env:
