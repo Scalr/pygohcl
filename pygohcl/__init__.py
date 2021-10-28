@@ -6,9 +6,6 @@ from pathlib import Path
 from pygohcl._pygohcl import ffi
 
 
-MAX_SIZE: int = 1024 * 1024  # 1 Mb
-
-
 def load_lib():
     suffix = distutils.sysconfig.get_config_var("EXT_SUFFIX")
 
@@ -28,9 +25,6 @@ class HCLInternalError(Exception):
 
 
 def loadb(data: bytes) -> tp.Dict:
-    if len(data) > MAX_SIZE:
-        raise HCLInternalError(f"size of HCL file is above maximal size ({len(data)} > {MAX_SIZE})")
-
     s = ffi.new("char[]", data)
     ret = lib.Parse(s)
     if ret.err != ffi.NULL:
