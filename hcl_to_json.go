@@ -67,7 +67,7 @@ func (c *converter) convertBlock(block *hclsyntax.Block, out jsonObj) error {
 			out, ok = inner.(jsonObj)
 			if !ok {
 				// TODO: better diagnostics
-				return fmt.Errorf("Unable to conver Block to JSON: %v.%v", block.Type, strings.Join(block.Labels, "."))
+				return fmt.Errorf("unable to convert Block to JSON: %v.%v", block.Type, strings.Join(block.Labels, "."))
 			}
 		} else {
 			obj := make(jsonObj)
@@ -194,7 +194,7 @@ func (c *converter) convertTemplateConditional(expr *hclsyntax.ConditionalExpr) 
 		return "", nil
 	}
 	builder.WriteString(trueResult)
-	falseResult, err := c.convertStringPart(expr.FalseResult)
+	falseResult, _ := c.convertStringPart(expr.FalseResult)
 	if len(falseResult) > 0 {
 		builder.WriteString("%{else}")
 		builder.WriteString(falseResult)
