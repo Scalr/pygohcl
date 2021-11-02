@@ -1,6 +1,5 @@
 import distutils.sysconfig
 import json
-import os
 import typing as tp
 from pathlib import Path
 
@@ -21,6 +20,10 @@ class HCLParseError(Exception):
     pass
 
 
+class HCLInternalError(Exception):
+    pass
+
+
 def loadb(data: bytes) -> tp.Dict:
     s = ffi.new("char[]", data)
     ret = lib.Parse(s)
@@ -28,7 +31,9 @@ def loadb(data: bytes) -> tp.Dict:
         err = ffi.string(ret.err)
         ffi.gc(ret.err, lib.free)
         err = err.decode("utf8")
-        raise HCLParseError(err)
+        if "invalid HCL:" in err:
+            raise HCLParseError(err)
+        raise HCLInternalError(err)
     ret_json = ffi.string(ret.json)
     ffi.gc(ret.json, lib.free)
     return json.loads(ret_json)

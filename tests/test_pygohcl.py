@@ -1,8 +1,14 @@
+import pytest
 import pygohcl
 
 
 def test_basic():
     assert pygohcl.loads('variable "test" {}') == {"variable": {"test": {}}}
+
+
+def test_parse_error():
+    with pytest.raises(pygohcl.HCLParseError):
+        pygohcl.loads('variable "test {}')
 
 
 def test_empty_list():
