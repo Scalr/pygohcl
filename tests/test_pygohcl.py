@@ -26,4 +26,4 @@ def test_null():
     default = null
     }"""
     )
-    assert out["variable"]["test"]["default"] == "null"
+    assert out["variable"]["test"]["default"] is None
