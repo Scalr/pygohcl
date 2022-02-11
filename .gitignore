@@ -1,5 +1,6 @@
 *.so
 venv
+/.python-version
 .eggs
 _pygohcl.py
 build
