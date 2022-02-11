@@ -94,11 +94,7 @@ func (c *converter) convertExpression(expr hclsyntax.Expression) (interface{}, e
 	// assume it is hcl syntax (because, um, it is)
 	switch value := expr.(type) {
 	case *hclsyntax.LiteralValueExpr:
-		val := value.Val
-		if val.IsNull() {
-			val = cty.StringVal("null")
-		}
-		return ctyjson.SimpleJSONValue{Value: val}, nil
+		return ctyjson.SimpleJSONValue{Value: value.Val}, nil
 	case *hclsyntax.TemplateExpr:
 		return c.convertTemplate(value)
 	case *hclsyntax.TemplateWrapExpr:
