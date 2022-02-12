@@ -12,24 +12,30 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: "1.13"
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r dev-requirements.txt
+
       - name: Install package
         run: |
           pip install -e .
+
       - name: Test with pytest for Python ${{ matrix.python-version }}
         run: |
           pytest --doctest-modules -o junit_family=xunit2 --junitxml=junit/test-results-${{ matrix.python-version }}.xml
+
       - name: Upload pytest test results
         uses: actions/upload-artifact@v2
         with:
@@ -42,19 +48,39 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     needs: [tests]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform:
+          - manylinux2014_x86_64
+          - manylinux2014_aarch64
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
+      - name: Set up QEMU
+        if: matrix.platform == 'manylinux2014_aarch64'
+        uses: docker/setup-qemu-action@v1
+
       - name: Install dependencies
         run: |
           pip install twine
-      - name: Build manylinux package
-        uses: RalfG/python-wheels-manylinux-build@v0.3.3
+
+      - name: Build manylinux Python wheels manylinux2014_x86_64
+        uses: RalfG/python-wheels-manylinux-build@v0.3.4-manylinux2014_x86_64
+        if: matrix.platform == 'manylinux2014_x86_64'
         with:
           python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39'
           pre-build-command: source pre-build-command.sh
+
+      - name: Build manylinux Python wheels manylinux2014_aarch64
+        if: matrix.platform == 'manylinux2014_aarch64'
+        uses: RalfG/python-wheels-manylinux-build@v0.3.4-manylinux2014_aarch64
+        with:
+          python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39'
+          pre-build-command: source pre-build-command.sh
+
       - name: Publish wheels to PyPI
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
