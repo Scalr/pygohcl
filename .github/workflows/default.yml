@@ -9,7 +9,6 @@ jobs:
     strategy:
       matrix:
         python-version: [3.6, 3.7, 3.8, 3.9]
-
     steps:
       - uses: actions/checkout@v2
 
@@ -43,16 +42,12 @@ jobs:
           path: junit/test-results-${{ matrix.python-version }}.xml
         if: ${{ always() }}
 
-  upload:
-    name: upload
+  build-linux:
+    name: Build wheels on Linux
     if: startsWith(github.ref, 'refs/tags/')
     needs: [tests]
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        platform:
-          - manylinux2014_x86_64
-          - manylinux2014_aarch64
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -60,30 +55,76 @@ jobs:
           fetch-depth: 0
 
       - name: Set up QEMU
-        if: matrix.platform == 'manylinux2014_aarch64'
+        if: runner.os == 'Linux'
         uses: docker/setup-qemu-action@v1
-
-      - name: Install dependencies
-        run: |
-          pip install twine
-
-      - name: Build manylinux Python wheels manylinux2014_x86_64
-        uses: RalfG/python-wheels-manylinux-build@v0.3.4-manylinux2014_x86_64
-        if: matrix.platform == 'manylinux2014_x86_64'
         with:
-          python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39'
-          pre-build-command: source pre-build-command.sh
+          platforms: all
 
-      - name: Build manylinux Python wheels manylinux2014_aarch64
-        if: matrix.platform == 'manylinux2014_aarch64'
-        uses: RalfG/python-wheels-manylinux-build@v0.3.4-manylinux2014_aarch64
-        with:
-          python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39'
-          pre-build-command: source pre-build-command.sh
+#      - name: Ensure pipx (it necesary only when you run actions locally with the act)
+#        if: runner.os == 'Linux'
+#        run: |
+#          command -v pipx >/dev/null 2>&1 || apt update -y \
+#          && apt install -y python3-pip python3-venv \
+#          && python3 -m pip install pipx \
+#          && python3 -m pipx ensurepath \
+#          && pipx --version
 
-      - name: Publish wheels to PyPI
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.3.1
         env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run: |
-          twine upload ./dist/*-manylinux*.whl
+          CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
+          CIBW_BEFORE_ALL: sh pre-build-command.sh
+          CIBW_BUILD: "cp36-* cp37-* cp38-* cp39-*"
+          CIBW_SKIP: "pp* *-musllinux*"
+          CIBW_ARCHS_LINUX: x86_64 aarch64
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: wheels
+          path: ./wheelhouse/*.whl
+
+  build-macos:
+      name: Build wheels on MacOS
+      if: startsWith(github.ref, 'refs/tags/')
+      needs: [tests]
+      runs-on: macos-latest
+
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v2
+          with:
+            fetch-depth: 0
+
+        - name: Build wheels
+          uses: pypa/cibuildwheel@v2.3.1
+          env:
+            CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
+            CIBW_BEFORE_ALL: sh pre-build-command.sh
+            CIBW_BUILD: "cp36-* cp37-* cp38-*"
+            CIBW_SKIP: "pp* *-musllinux*"
+            CIBW_ARCHS_MACOS: x86_64 universal2
+
+        - uses: actions/upload-artifact@v2
+          with:
+            name: wheels
+            path: ./wheelhouse/*.whl
+
+  upload:
+    name: upload
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [build-linux, build-macos]
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/download-artifact@v2
+      with:
+        name: wheels
+        path: dist
+
+    - name: Display structure of downloaded files
+      run: ls -lh dist
+
+    - uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        user: ${{ secrets.PYPI_USERNAME }}
+        password: ${{ secrets.PYPI_PASSWORD }}
