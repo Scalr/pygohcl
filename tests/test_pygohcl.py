@@ -27,3 +27,14 @@ def test_null():
     }"""
     )
     assert out["variable"]["test"]["default"] is None
+
+
+def test_value_is_null():
+    with pytest.raises(pygohcl.HCLInternalError):
+        pygohcl.loads(
+            """resource "datadog_synthetics_test" "status_check_api" {
+                message = <<-EOT
+                    ${local.is_production_env ? "prod" : null}
+                EOT
+            }"""
+        )
