@@ -14,7 +14,14 @@ import (
 )
 
 //export Parse
-func Parse(a *C.char) C.parseResponse {
+func Parse(a *C.char) (resp C.parseResponse) {
+    defer func() {
+        if err := recover(); err != nil {
+			retValue := fmt.Sprintf("panic HCL: %v", err)
+			resp = C.parseResponse{nil, C.CString(retValue)}
+        }
+    }()
+
 	input := C.GoString(a)
 	hclFile, diags := hclparse.NewParser().ParseHCL([]byte(input), "tmp.hcl")
 	if diags.HasErrors() {
@@ -33,7 +40,9 @@ func Parse(a *C.char) C.parseResponse {
 	if err != nil {
 		return C.parseResponse{nil, C.CString(fmt.Sprintf("cannot Go map representation to JSON: %s", err))}
 	}
-	return C.parseResponse{C.CString(string(hclInJson)), nil}
+	resp = C.parseResponse{C.CString(string(hclInJson)), nil}
+
+	return
 }
 
 func main() {

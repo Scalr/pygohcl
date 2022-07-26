@@ -28,7 +28,7 @@ def loadb(data: bytes) -> tp.Dict:
     s = ffi.new("char[]", data)
     ret = lib.Parse(s)
     if ret.err != ffi.NULL:
-        err = ffi.string(ret.err)
+        err: bytes = ffi.string(ret.err)
         ffi.gc(ret.err, lib.free)
         err = err.decode("utf8")
         if "invalid HCL:" in err:
