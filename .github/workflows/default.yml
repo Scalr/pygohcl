@@ -131,5 +131,6 @@ jobs:
 
     - uses: pypa/gh-action-pypi-publish@release/v1
       with:
+        skip_existing: true
         user: ${{ secrets.PYPI_USERNAME }}
         password: ${{ secrets.PYPI_PASSWORD }}
