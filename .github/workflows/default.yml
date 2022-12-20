@@ -41,7 +41,7 @@ jobs:
           pytest --doctest-modules -o junit_family=xunit2 --junitxml=junit/test-results-${{ matrix.python-version }}.xml
 
       - name: Upload pytest test results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: pytest-results-${{ matrix.python-version }}
           path: junit/test-results-${{ matrix.python-version }}.xml
@@ -55,7 +55,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -75,15 +75,15 @@ jobs:
 #          && pipx --version
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.3.1
+        uses: pypa/cibuildwheel@v2.11.3
         env:
           CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
           CIBW_BEFORE_ALL: sh pre-build-command.sh
-          CIBW_BUILD: "cp36-* cp37-* cp38-* cp39-*"
+          CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-* cp311-*"
           CIBW_SKIP: "pp* *-musllinux*"
           CIBW_ARCHS_LINUX: x86_64 aarch64
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: wheels
           path: ./wheelhouse/*.whl
@@ -96,20 +96,20 @@ jobs:
 
       steps:
         - name: Checkout
-          uses: actions/checkout@v2
+          uses: actions/checkout@v3
           with:
             fetch-depth: 0
 
         - name: Build wheels
-          uses: pypa/cibuildwheel@v2.3.1
+          uses: pypa/cibuildwheel@v2.11.3
           env:
             CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
             CIBW_BEFORE_ALL: sh pre-build-command.sh
-            CIBW_BUILD: "cp36-* cp37-* cp38-*"
+            CIBW_BUILD: "cp37-* cp38-* cp39-* cp310-* cp311-*"
             CIBW_SKIP: "pp* *-musllinux*"
             CIBW_ARCHS_MACOS: x86_64 universal2
 
-        - uses: actions/upload-artifact@v2
+        - uses: actions/upload-artifact@v3
           with:
             name: wheels
             path: ./wheelhouse/*.whl
