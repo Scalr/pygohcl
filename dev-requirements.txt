@@ -5,7 +5,7 @@ importlib-metadata==1.6.0
 more-itertools==8.3.0
 packaging==20.4
 pluggy==0.13.1
-py==1.10.0
+py==1.11.0
 pycparser==2.20
 pyelftools==0.26
 pyparsing==2.4.7
