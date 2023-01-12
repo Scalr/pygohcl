@@ -1,3 +1,2 @@
 [tool.pytest.ini_options]
-version = "1.0.6"
 addopts = "--color=yes"
