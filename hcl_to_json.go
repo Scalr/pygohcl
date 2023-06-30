@@ -95,6 +95,8 @@ func (c *converter) convertExpression(expr hclsyntax.Expression) (interface{}, e
 	switch value := expr.(type) {
 	case *hclsyntax.LiteralValueExpr:
 		return ctyjson.SimpleJSONValue{Value: value.Val}, nil
+	case *hclsyntax.UnaryOpExpr:
+		return c.convertUnary(value)
 	case *hclsyntax.TemplateExpr:
 		return c.convertTemplate(value)
 	case *hclsyntax.TemplateWrapExpr:
@@ -223,4 +225,18 @@ func (c *converter) convertTemplateFor(expr *hclsyntax.ForExpr) (string, error) 
 
 func (c *converter) wrapExpr(expr hclsyntax.Expression) string {
 	return c.rangeSource(expr.Range())
+}
+
+func (c *converter) convertUnary(v *hclsyntax.UnaryOpExpr) (interface{}, error) {
+	_, isLiteral := v.Val.(*hclsyntax.LiteralValueExpr)
+	if !isLiteral {
+		// If the expression after the operator isn't a literal, fall back to
+		// wrapping the expression with ${...}
+		return c.wrapExpr(v), nil
+	}
+	val, err := v.Value(nil)
+	if err != nil {
+		return nil, err
+	}
+	return ctyjson.SimpleJSONValue{Value: val}, nil
 }
