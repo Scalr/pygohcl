@@ -230,8 +230,6 @@ func (c *converter) wrapExpr(expr hclsyntax.Expression) string {
 func (c *converter) convertUnary(v *hclsyntax.UnaryOpExpr) (interface{}, error) {
 	_, isLiteral := v.Val.(*hclsyntax.LiteralValueExpr)
 	if !isLiteral {
-		// If the expression after the operator isn't a literal, fall back to
-		// wrapping the expression with ${...}
 		return c.wrapExpr(v), nil
 	}
 	val, err := v.Value(nil)

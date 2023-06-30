@@ -41,11 +41,11 @@ def test_numbers():
         }"""
     )
     assert out["locals"]["a"] == 0.19
-    assert out["locals"]["b"] == "${1 + 9}"
+    assert out["locals"]["b"] == "1+9"
     assert out["locals"]["c"] == -0.82
     assert out["locals"]["x"] == -10
-    assert out["locals"]["y"] == "${-x}"
-    assert out["locals"]["z"] == "${-(1 + 4)}"
+    assert out["locals"]["y"] == "-x"
+    assert out["locals"]["z"] == "-(1+4)"
 
 def test_value_is_null():
     with pytest.raises(pygohcl.HCLInternalError):
