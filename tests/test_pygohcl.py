@@ -29,6 +29,24 @@ def test_null():
     assert out["variable"]["test"]["default"] is None
 
 
+def test_numbers():
+    out = pygohcl.loads(
+        """locals {
+            a = 0.19
+            b = 1 + 9
+            c = -0.82
+            x = -10
+            y = -x
+            z = -(1 + 4)
+        }"""
+    )
+    assert out["locals"]["a"] == 0.19
+    assert out["locals"]["b"] == "1+9"
+    assert out["locals"]["c"] == -0.82
+    assert out["locals"]["x"] == -10
+    assert out["locals"]["y"] == "-x"
+    assert out["locals"]["z"] == "-(1+4)"
+
 def test_value_is_null():
     with pytest.raises(pygohcl.HCLInternalError):
         pygohcl.loads(
