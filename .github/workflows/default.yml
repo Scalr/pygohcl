@@ -52,54 +52,64 @@ jobs:
         if: ${{ always() }}
 
   build-wheels:
-      name: Build wheel for ${{ matrix.python }}-${{ matrix.buildplat[1] }}-${{ matrix.buildplat[2] }}
-      needs: [tests]
-      runs-on: ${{ matrix.buildplat[0] }}
-      strategy:
-        fail-fast: false
-        matrix:
-          buildplat:
+    name: Build wheel for ${{ matrix.python }}-${{ matrix.buildplat[1] }}-${{ matrix.buildplat[2] }}
+    needs: [tests]
+    runs-on: ${{ matrix.buildplat[0] }}
+    strategy:
+      fail-fast: false
+      matrix:
+        buildplat:
           - [ubuntu-latest, manylinux, "x86_64 aarch64"]
           - [macos-latest, macosx, x86_64]
-          python: ["cp37", "cp38", "cp39", "cp310", "cp311"]
+          - [windows-latest, win, x86_64]
+        python: ["cp37", "cp38", "cp39", "cp310", "cp311"]
 
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v3
-          with:
-            fetch-depth: 0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-        - name: Set up QEMU
-          if: runner.os == 'Linux'
-          uses: docker/setup-qemu-action@v1
-          with:
-            platforms: all
+      - name: Set up QEMU
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: all
 
-        - name: Build wheels on linux
-          if: ${{ matrix.buildplat[1] == 'manylinux' }}
-          uses: pypa/cibuildwheel@v2.11.4
-          env:
-            CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
-            CIBW_BEFORE_BUILD: sh pre-build-command.sh
-            CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}*
-            CIBW_SKIP: "pp* *-musllinux*"
-            CIBW_ARCHS_LINUX: ${{ matrix.buildplat[2] }}
+      - name: Build wheels on linux
+        if: ${{ matrix.buildplat[1] == 'manylinux' }}
+        uses: pypa/cibuildwheel@v2.11.4
+        env:
+          CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
+          CIBW_BEFORE_BUILD: sh pre-build-command.sh
+          CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}*
+          CIBW_SKIP: "pp* *-musllinux*"
+          CIBW_ARCHS_LINUX: ${{ matrix.buildplat[2] }}
 
-        - name: Build wheels on macos
-          if: ${{ matrix.buildplat[1] == 'macosx' }}
-          uses: pypa/cibuildwheel@v2.11.4
-          env:
-            CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
-            CIBW_BEFORE_BUILD: sh pre-build-command.sh
-            CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}*
-            CIBW_SKIP: "pp* *-musllinux*"
-            CIBW_ARCHS_MACOS: ${{ matrix.buildplat[2] }}
+      - name: Build wheels on macos
+        if: ${{ matrix.buildplat[1] == 'macosx' }}
+        uses: pypa/cibuildwheel@v2.11.4
+        env:
+          CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
+          CIBW_BEFORE_BUILD: sh pre-build-command.sh
+          CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}*
+          CIBW_SKIP: "pp* *-musllinux*"
+          CIBW_ARCHS_MACOS: ${{ matrix.buildplat[2] }}
 
-        - uses: actions/upload-artifact@v3
-          with:
-            name: wheels
-            path: ./wheelhouse/*.whl
+      - name: Build wheels on macos
+        if: ${{ matrix.buildplat[1] == 'windows' }}
+        uses: pypa/cibuildwheel@v2.11.4
+        env:
+          CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
+          CIBW_BEFORE_BUILD: Invoke-WebRequest -URI "https://storage.googleapis.com/golang/go1.17.windows-amd64.zip" | Expand-Archive
+          CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}*
+          CIBW_SKIP: "pp* *-musllinux*"
+          CIBW_ARCHS_WINDOWS: ${{ matrix.buildplat[2] }}
 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: ./wheelhouse/*.whl
 
   upload:
     name: upload
@@ -108,17 +118,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/download-artifact@v2
-      with:
-        name: wheels
-        path: dist
+      - uses: actions/download-artifact@v2
+        with:
+          name: wheels
+          path: dist
 
-    - name: Display structure of downloaded files
-      run: ls -lh dist
+      - name: Display structure of downloaded files
+        run: ls -lh dist
 
-    - uses: pypa/gh-action-pypi-publish@release/v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        skip_existing: true
-        user: ${{ secrets.PYPI_USERNAME }}
-        password: ${{ secrets.PYPI_PASSWORD }}
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          skip_existing: true
+          user: ${{ secrets.PYPI_USERNAME }}
+          password: ${{ secrets.PYPI_PASSWORD }}
