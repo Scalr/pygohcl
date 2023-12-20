@@ -77,7 +77,7 @@ jobs:
 
         - name: Build wheels on linux
           if: ${{ matrix.buildplat[1] == 'manylinux' }}
-          uses: pypa/cibuildwheel@v2.11.4
+          uses: pypa/cibuildwheel@v2.16.2
           env:
             CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
             CIBW_BEFORE_BUILD: sh pre-build-command.sh
@@ -87,7 +87,7 @@ jobs:
 
         - name: Build wheels on macos
           if: ${{ matrix.buildplat[1] == 'macosx' }}
-          uses: pypa/cibuildwheel@v2.11.4
+          uses: pypa/cibuildwheel@v2.16.2
           env:
             CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
             CIBW_BEFORE_BUILD: sh pre-build-command.sh
