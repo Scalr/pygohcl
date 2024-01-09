@@ -52,53 +52,53 @@ jobs:
         if: ${{ always() }}
 
   build-wheels:
-  name: Build wheel for ${{ matrix.python }}-${{ matrix.buildplat[1] }}-${{ matrix.buildplat[2] }}
-  needs: [tests]
-  runs-on: ${{ matrix.buildplat[0] }}
-  strategy:
-    fail-fast: false
-    matrix:
-      buildplat:
-      - [ubuntu-latest, manylinux, "x86_64 aarch64"]
-      - [macos-latest, macosx, x86_64]
-      python: ["cp38", "cp39", "cp310", "cp311", "cp312"]
+    name: Build wheel for ${{ matrix.python }}-${{ matrix.buildplat[1] }}-${{ matrix.buildplat[2] }}
+    needs: [tests]
+    runs-on: ${{ matrix.buildplat[0] }}
+    strategy:
+      fail-fast: false
+      matrix:
+        buildplat:
+        - [ubuntu-latest, manylinux, "x86_64 aarch64"]
+        - [macos-latest, macosx, x86_64]
+        python: ["cp38", "cp39", "cp310", "cp311", "cp312"]
 
-  steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    - name: Set up QEMU
-      if: runner.os == 'Linux'
-      uses: docker/setup-qemu-action@v1
-      with:
-        platforms: all
+      - name: Set up QEMU
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: all
 
-    - name: Build wheels on linux
-      if: ${{ matrix.buildplat[1] == 'manylinux' }}
-      uses: pypa/cibuildwheel@v2.16.2
-      env:
-        CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
-        CIBW_BEFORE_BUILD: sh pre-build-command.sh
-        CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}*
-        CIBW_SKIP: "pp* *-musllinux*"
-        CIBW_ARCHS_LINUX: ${{ matrix.buildplat[2] }}
+      - name: Build wheels on linux
+        if: ${{ matrix.buildplat[1] == 'manylinux' }}
+        uses: pypa/cibuildwheel@v2.16.2
+        env:
+          CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
+          CIBW_BEFORE_BUILD: sh pre-build-command.sh
+          CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}*
+          CIBW_SKIP: "pp* *-musllinux*"
+          CIBW_ARCHS_LINUX: ${{ matrix.buildplat[2] }}
 
-    - name: Build wheels on macos
-      if: ${{ matrix.buildplat[1] == 'macosx' }}
-      uses: pypa/cibuildwheel@v2.16.2
-      env:
-        CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
-        CIBW_BEFORE_BUILD: sh pre-build-command.sh
-        CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}*
-        CIBW_SKIP: "pp* *-musllinux*"
-        CIBW_ARCHS_MACOS: ${{ matrix.buildplat[2] }}
+      - name: Build wheels on macos
+        if: ${{ matrix.buildplat[1] == 'macosx' }}
+        uses: pypa/cibuildwheel@v2.16.2
+        env:
+          CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
+          CIBW_BEFORE_BUILD: sh pre-build-command.sh
+          CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}*
+          CIBW_SKIP: "pp* *-musllinux*"
+          CIBW_ARCHS_MACOS: ${{ matrix.buildplat[2] }}
 
-    - uses: actions/upload-artifact@v3
-      with:
-        name: wheels
-        path: ./wheelhouse/*.whl
+      - uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: ./wheelhouse/*.whl
 
 
   upload:
