@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: [3.8", "3.9", "3.10", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v3
 
@@ -61,7 +61,7 @@ jobs:
       buildplat:
       - [ubuntu-latest, manylinux, "x86_64 aarch64"]
       - [macos-latest, macosx, x86_64]
-      python: ["cp37", "cp38", "cp39", "cp310", "cp311", "cp312"]
+      python: ["cp38", "cp39", "cp310", "cp311", "cp312"]
 
   steps:
     - name: Checkout
