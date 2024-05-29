@@ -1,6 +1,6 @@
 module github.com/Scalr/pygohcl
 
-go 1.17
+go 1.22
 
 require (
 	github.com/hashicorp/hcl/v2 v2.10.1
