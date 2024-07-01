@@ -64,3 +64,5 @@ def test_unknown_function():
 
     with pytest.raises(pygohcl.UnknownFunctionError) as err:
         pygohcl.eval_var_condition(c, e, n, v)
+
+    assert 'There is no function named "sin"' in str(err.value)
