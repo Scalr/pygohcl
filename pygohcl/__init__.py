@@ -63,10 +63,10 @@ def attributes_loadb(data: bytes) -> tp.Dict:
 
     Example:
         >>> hcl = '''
-        >>> key1 = "value"
-        >>> key2 = false
-        >>> key3 = [1, 2, 3]
-        >>> '''
+        ... key1 = "value"
+        ... key2 = false
+        ... key3 = [1, 2, 3]
+        ... '''
         >>> import pygohcl
         >>> print(pygohcl.attributes_loads(hcl))
         {'key1': 'value', 'key2': False, 'key3': [1, 2, 3]}
@@ -107,6 +107,16 @@ def eval_var_condition(
     of useful functions, which will not pass this validation.
     For that reason a separate `UnknownFunctionError` is raised then,
     so the consumer can decide how to treat this case.
+
+    Example:
+        >>> import pygohcl
+        >>> pygohcl.eval_var_condition(
+        ...     condition="var.count < 3",
+        ...     error_message="count must be less than 3, but ${var.count} was given",
+        ...     variable_name="count",
+        ...     variable_value="5",
+        ... )
+        pygohcl.ValidationError: count must be less than 3, but 5 was given
 
     :raises ValidationError: when the condition expression has not evaluated to `True`
     :raises UnknownFunctionError: when the condition expression refers to a function
