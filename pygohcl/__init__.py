@@ -116,6 +116,8 @@ def eval_var_condition(
         ...     variable_name="count",
         ...     variable_value="5",
         ... )
+        Traceback (most recent call last):
+            ...
         pygohcl.ValidationError: count must be less than 3, but 5 was given
 
     :raises ValidationError: when the condition expression has not evaluated to `True`
