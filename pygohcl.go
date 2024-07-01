@@ -46,8 +46,8 @@ func Parse(a *C.char) (resp C.parseResponse) {
 	return
 }
 
-//export ParseTfVars
-func ParseTfVars(a *C.char) (resp C.parseResponse) {
+//export ParseAttributes
+func ParseAttributes(a *C.char) (resp C.parseResponse) {
 	defer func() {
 		if err := recover(); err != nil {
 			retValue := fmt.Sprintf("panic HCL: %v", err)
@@ -56,7 +56,7 @@ func ParseTfVars(a *C.char) (resp C.parseResponse) {
 	}()
 
 	input := C.GoString(a)
-	hclFile, parseDiags := hclsyntax.ParseConfig([]byte(input), "tmp.tfvars", hcl.InitialPos)
+	hclFile, parseDiags := hclsyntax.ParseConfig([]byte(input), "tmp.hcl", hcl.InitialPos)
 	if parseDiags.HasErrors() {
 		return C.parseResponse{nil, C.CString(diagErrorsToString(parseDiags, "invalid HCL: %s"))}
 	}

@@ -3,7 +3,7 @@ import pygohcl
 
 
 def test_basic_success():
-    c = 'var.count < 3'
+    c = "var.count < 3"
     e = "must be less than 3"
     n = "count"
     v = "1"
@@ -12,7 +12,7 @@ def test_basic_success():
 
 
 def test_basic_fail():
-    c = 'var.count < 3'
+    c = "var.count < 3"
     e = "must be less than 3"
     n = "count"
     v = "5"
@@ -24,7 +24,7 @@ def test_basic_fail():
 
 
 def test_error_message_eval():
-    c = 'var.count < 3'
+    c = "var.count < 3"
     e = "must be less than 3, ${var.count} was given"
     n = "count"
     v = "5"
@@ -32,10 +32,19 @@ def test_error_message_eval():
     with pytest.raises(pygohcl.ValidationError) as err:
         pygohcl.eval_var_condition(c, e, n, v)
 
-    assert (
-        str(err.value)
-        == "must be less than 3, 5 was given"
-    )
+    assert str(err.value) == "must be less than 3, 5 was given"
+
+
+def test_error_message_failed_eval():
+    c = "var.count < 3"
+    e = "${var.missing}"
+    n = "count"
+    v = "5"
+
+    with pytest.raises(pygohcl.ValidationError) as err:
+        pygohcl.eval_var_condition(c, e, n, v)
+
+    assert str(err.value) == "cannot process error message expression"
 
 
 def test_function():
@@ -48,7 +57,7 @@ def test_function():
 
 
 def test_unknown_function():
-    c = 'sin(var.angle) > 0.7'
+    c = "sin(var.angle) > 0.7"
     e = "invalid angle"
     n = "angle"
     v = "45"
