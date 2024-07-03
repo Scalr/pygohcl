@@ -63,7 +63,7 @@ func ParseAttributes(a *C.char) (resp C.parseResponse) {
 
 	var diags hcl.Diagnostics
 	hclMap := make(jsonObj)
-	c := converter{}
+	c := converter{[]byte(input)}
 
 	attrs, attrsDiags := hclFile.Body.JustAttributes()
 	diags = diags.Extend(attrsDiags)

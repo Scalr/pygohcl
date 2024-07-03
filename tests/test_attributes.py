@@ -85,3 +85,61 @@ you
 EOT
     """
     assert pygohcl.attributes_loads(s) == {"var": "hey\nyou\n"}
+
+
+def test_complex_objects():
+    s = """
+    var = [
+        {
+            a = 1
+            b = 2
+        },
+        {
+            a = "1"
+            b = false
+        },
+        {
+            a = [1, 2, 3]
+            b = [4, 5, 6]
+        },
+        {
+            c = {
+                a = 1
+                b = [true, false]
+            }
+        }
+    ]
+    """
+    assert pygohcl.attributes_loads(s) == {
+        "var": [
+            {
+                "a": 1,
+                "b": 2,
+            },
+            {
+                "a": "1",
+                "b": False,
+            },
+            {
+                "a": [
+                    1,
+                    2,
+                    3,
+                ],
+                "b": [
+                    4,
+                    5,
+                    6,
+                ],
+            },
+            {
+                "c": {
+                    "a": 1,
+                    "b": [
+                        True,
+                        False,
+                    ],
+                },
+            },
+        ]
+    }
