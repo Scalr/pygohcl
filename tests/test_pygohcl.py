@@ -47,6 +47,7 @@ def test_numbers():
     assert out["locals"]["y"] == "-x"
     assert out["locals"]["z"] == "-(1+4)"
 
+
 def test_value_is_null():
     with pytest.raises(pygohcl.HCLInternalError):
         pygohcl.loads(
@@ -56,3 +57,10 @@ def test_value_is_null():
                 EOT
             }"""
         )
+
+
+def test_namespaced_functions():
+    assert pygohcl.loads(
+    """locals {
+        timestamp = provider::time::rfc3339_parse(plantimestamp())
+    }""") == {"locals": {"timestamp": "provider::time::rfc3339_parse(plantimestamp())"}}
