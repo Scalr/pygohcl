@@ -16,20 +16,21 @@ type jsonObj map[string]interface{}
 
 // Convert an hcl File to a json serializable object
 // This assumes that the body is a hclsyntax.Body
-func convertFile(file *hcl.File) (jsonObj, error) {
-	c := converter{bytes: file.Bytes}
+func convertFile(file *hcl.File, keepInterp bool) (jsonObj, error) {
+	c := converter{bytes: file.Bytes, keepInterp: keepInterp}
 	body := file.Body.(*hclsyntax.Body)
 	return c.convertBody(body)
 }
 
 type converter struct {
-	bytes []byte
+	bytes      []byte
+	keepInterp bool
 }
 
 func (c *converter) rangeSource(r hcl.Range) string {
 	data := string(c.bytes[r.Start.Byte:r.End.Byte])
-	data = strings.ReplaceAll(data, "\n", "")
-	data = strings.ReplaceAll(data, " ", "")
+	data = strings.ReplaceAll(data, "\n", " ")
+	data = strings.Join(strings.Fields(data), " ")
 	return data
 }
 
@@ -165,6 +166,9 @@ func (c *converter) convertStringPart(expr hclsyntax.Expression) (string, error)
 		return c.convertTemplateConditional(v)
 	case *hclsyntax.TemplateJoinExpr:
 		return c.convertTemplateFor(v.Tuple.(*hclsyntax.ForExpr))
+	case *hclsyntax.ScopeTraversalExpr:
+		return c.wrapTraversal(expr), nil
+
 	default:
 		// treating as an embedded expression
 		return c.wrapExpr(expr), nil
@@ -225,6 +229,14 @@ func (c *converter) convertTemplateFor(expr *hclsyntax.ForExpr) (string, error) 
 
 func (c *converter) wrapExpr(expr hclsyntax.Expression) string {
 	return c.rangeSource(expr.Range())
+}
+
+func (c *converter) wrapTraversal(expr hclsyntax.Expression) string {
+	res := c.wrapExpr(expr)
+	if c.keepInterp {
+		res = "${" + res + "}"
+	}
+	return res
 }
 
 func (c *converter) convertUnary(v *hclsyntax.UnaryOpExpr) (interface{}, error) {
