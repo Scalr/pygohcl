@@ -45,7 +45,7 @@ jobs:
           pytest --doctest-modules -o junit_family=xunit2 --junitxml=junit/test-results-${{ matrix.python-version }}.xml
 
       - name: Upload pytest test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: pytest-results-${{ matrix.python-version }}
           path: junit/test-results-${{ matrix.python-version }}.xml
@@ -96,7 +96,7 @@ jobs:
           CIBW_SKIP: "pp* *-musllinux*"
           CIBW_ARCHS_MACOS: ${{ matrix.buildplat[2] }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: ./wheelhouse/*.whl
@@ -108,7 +108,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v4
       with:
         name: wheels
         path: dist
