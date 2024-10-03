@@ -8,6 +8,8 @@ import "C"
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/ext/tryfunc"
 	"github.com/hashicorp/hcl/v2/hclparse"
@@ -16,11 +18,10 @@ import (
 	"github.com/zclconf/go-cty/cty/convert"
 	"github.com/zclconf/go-cty/cty/function"
 	"github.com/zclconf/go-cty/cty/function/stdlib"
-	"strings"
 )
 
 //export Parse
-func Parse(a *C.char) (resp C.parseResponse) {
+func Parse(a *C.char, keepInterpFlag C.int) (resp C.parseResponse) {
 	defer func() {
 		if err := recover(); err != nil {
 			retValue := fmt.Sprintf("panic HCL: %v", err)
@@ -29,11 +30,12 @@ func Parse(a *C.char) (resp C.parseResponse) {
 	}()
 
 	input := C.GoString(a)
+	keepInterp := keepInterpFlag == 1
 	hclFile, diags := hclparse.NewParser().ParseHCL([]byte(input), "tmp.hcl")
 	if diags.HasErrors() {
 		return C.parseResponse{nil, C.CString(diagErrorsToString(diags, "invalid HCL: %s"))}
 	}
-	hclMap, err := convertFile(hclFile)
+	hclMap, err := convertFile(hclFile, keepInterp)
 	if err != nil {
 		return C.parseResponse{nil, C.CString(fmt.Sprintf("cannot convert HCL to Go map representation: %s", err))}
 	}
@@ -63,7 +65,7 @@ func ParseAttributes(a *C.char) (resp C.parseResponse) {
 
 	var diags hcl.Diagnostics
 	hclMap := make(jsonObj)
-	c := converter{[]byte(input)}
+	c := converter{[]byte(input), false}
 
 	attrs, attrsDiags := hclFile.Body.JustAttributes()
 	diags = diags.Extend(attrsDiags)

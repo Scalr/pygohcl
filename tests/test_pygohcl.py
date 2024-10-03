@@ -41,11 +41,11 @@ def test_numbers():
         }"""
     )
     assert out["locals"]["a"] == 0.19
-    assert out["locals"]["b"] == "1+9"
+    assert out["locals"]["b"] == "1 + 9"
     assert out["locals"]["c"] == -0.82
     assert out["locals"]["x"] == -10
     assert out["locals"]["y"] == "-x"
-    assert out["locals"]["z"] == "-(1+4)"
+    assert out["locals"]["z"] == "-(1 + 4)"
 
 
 def test_value_is_null():
@@ -64,3 +64,36 @@ def test_namespaced_functions():
     """locals {
         timestamp = provider::time::rfc3339_parse(plantimestamp())
     }""") == {"locals": {"timestamp": "provider::time::rfc3339_parse(plantimestamp())"}}
+
+
+def test_expression_whitespace_trimming():
+    out = pygohcl.loads("""
+    variable "a" {
+	  validation {
+	    condition = alltrue(
+	    
+	      [for
+	        value in values(var.a)   :
+	          regex("[a-z]+",value.my_key) == "val"
+	      ]
+	    )
+	  }
+	}""")
+    assert (out["variable"]["a"]["validation"]["condition"]
+        == "alltrue( [for value in values(var.a) : regex(\"[a-z]+\",value.my_key) == \"val\" ] )")
+
+
+def test_keep_template_interpolation():
+    s = """
+	variable "a" {
+	 validation {
+	   error_message = "Nope, ${var.a} is less than 5."
+	 }
+	}"""
+
+    assert pygohcl.loads(s) == {
+        "variable": {"a": {"validation": {"error_message": "Nope, var.a is less than 5."}}}
+    }
+    assert pygohcl.loads(s, True) == {
+        "variable": {"a": {"validation": {"error_message": "Nope, ${var.a} is less than 5."}}}
+    }

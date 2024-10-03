@@ -32,9 +32,15 @@ class UnknownFunctionError(ValidationError):
     pass
 
 
-def loadb(data: bytes) -> tp.Dict:
+def loadb(data: bytes, keep_interpolations: bool = False) -> tp.Dict:
+    """
+    Parse and load HCL input into Python dictionary.
+    :param data: HCL to parse.
+    :param keep_interpolations: Set to True
+        to preserve template interpolation sequences (${ ... }) in strings. Defaults to False.
+    """
     s = ffi.new("char[]", data)
-    ret = lib.Parse(s)
+    ret = lib.Parse(s, int(keep_interpolations))
     if ret.err != ffi.NULL:
         err: bytes = ffi.string(ret.err)
         ffi.gc(ret.err, lib.free)
@@ -47,13 +53,13 @@ def loadb(data: bytes) -> tp.Dict:
     return json.loads(ret_json)
 
 
-def loads(data: str) -> tp.Dict:
-    return loadb(data.encode("utf8"))
+def loads(data: str, keep_interpolations: bool = False) -> tp.Dict:
+    return loadb(data.encode("utf8"), keep_interpolations)
 
 
-def load(stream: tp.IO) -> tp.Dict:
+def load(stream: tp.IO, keep_interpolations: bool = False) -> tp.Dict:
     data = stream.read()
-    return loadb(data)
+    return loadb(data, keep_interpolations)
 
 
 def attributes_loadb(data: bytes) -> tp.Dict:
