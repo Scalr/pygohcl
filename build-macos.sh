@@ -19,7 +19,7 @@ set -e
 
 mkdir -p ./macos-dist
 rm -fr ./macos-dist/*.whl
-for VERSION in 3.8.10 3.9.16 3.10.10 3.11.3 3.12.0, 3.13.0
+for VERSION in 3.8.10 3.9.16 3.10.10 3.11.3 3.12.0
 do
   # Assumes that all python version are pre-installed.
   # pyenv install -v ${VERSION}
