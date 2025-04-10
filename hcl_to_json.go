@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	hcl "github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/zclconf/go-cty/cty"
 	ctyconvert "github.com/zclconf/go-cty/cty/convert"
@@ -29,7 +29,10 @@ type converter struct {
 
 func (c *converter) rangeSource(r hcl.Range) string {
 	data := string(c.bytes[r.Start.Byte:r.End.Byte])
-	data = strings.ReplaceAll(data, "\n", " ")
+
+	lines := stripInlineComments(strings.Split(data, "\n"))
+	data = stripBlockComments(strings.Join(lines, " "))
+
 	data = strings.Join(strings.Fields(data), " ")
 	return data
 }
@@ -249,4 +252,83 @@ func (c *converter) convertUnary(v *hclsyntax.UnaryOpExpr) (interface{}, error) 
 		return nil, err
 	}
 	return ctyjson.SimpleJSONValue{Value: val}, nil
+}
+
+// stripInlineComments removes single-line comments that start with # or // from each line.
+func stripInlineComments(lines []string) []string {
+	stripped := make([]string, len(lines))
+	for i, line := range lines {
+		// Track if we're inside a string literal
+		inString := false
+		// Character used to open the string literal
+		inStringChar := byte(0)
+		var strippedLine strings.Builder
+
+		for j := 0; j < len(line); j++ {
+			char := line[j]
+
+			// Handle string literals
+			if char == '"' || char == '\'' {
+				if !inString {
+					inString = true
+					inStringChar = char
+				} else if inStringChar == char {
+					inString = false
+				}
+			}
+
+			// Only process comments if we're not inside a string literal
+			if !inString {
+				if char == '#' || (char == '/' && j+1 < len(line) && line[j+1] == '/') {
+					// Found a comment, stop processing this line
+					break
+				}
+			}
+
+			strippedLine.WriteByte(char)
+		}
+
+		stripped[i] = strippedLine.String()
+	}
+	return stripped
+}
+
+// stripBlockComments removes block comments that start with /* and end with */ from a given string.
+func stripBlockComments(text string) string {
+	var stripped strings.Builder
+	// Track if we're inside a string literal
+	inString := false
+	// Character used to open the string literal
+	inStringChar := byte(0)
+
+	for i := 0; i < len(text); i++ {
+		char := text[i]
+
+		// Handle string literals
+		if char == '"' || char == '\'' {
+			if !inString {
+				inString = true
+				inStringChar = char
+			} else if inStringChar == char {
+				inString = false
+			}
+		}
+
+		// Only process comments if we're not inside a string literal
+		if !inString {
+			if char == '/' && i+1 < len(text) && text[i+1] == '*' {
+				// Found the start of a block comment
+				end := strings.Index(text[i:], "*/")
+				if end == -1 {
+					break
+				}
+				i += end + 1
+				continue
+			}
+		}
+
+		stripped.WriteByte(char)
+	}
+
+	return stripped.String()
 }
