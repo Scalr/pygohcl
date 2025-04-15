@@ -88,6 +88,26 @@ import pygohcl
                 }
             },
         ),
+        (  # Unclosed block inside of an inline comment
+            """variable "test" {
+                validation {
+                    condition = alltrue([
+                        for val in var.values:
+                            # inline comment /* with a block 
+                            contains(val, "a")
+                    ])
+                }
+            }""",
+            {
+                "variable": {
+                    "test": {
+                        "validation": {
+                            "condition": "alltrue([ for val in var.values: contains(val, \"a\") ])",
+                        }
+                    }
+                }
+            },
+        ),
     ],
 )
 def test_expression_comments(hcl, expected):

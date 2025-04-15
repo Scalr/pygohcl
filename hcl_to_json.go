@@ -29,14 +29,7 @@ type converter struct {
 
 func (c *converter) rangeSource(r hcl.Range) string {
 	data := string(c.bytes[r.Start.Byte:r.End.Byte])
-
-	// First process block comments
-	data = stripBlockComments(data)
-
-	// Then process inline comments
-	lines := stripInlineComments(strings.Split(data, "\n"))
-
-	data = strings.Join(lines, " ")
+	data = stripComments(data)
 	data = strings.Join(strings.Fields(data), " ")
 	return data
 }
@@ -258,18 +251,21 @@ func (c *converter) convertUnary(v *hclsyntax.UnaryOpExpr) (interface{}, error) 
 	return ctyjson.SimpleJSONValue{Value: val}, nil
 }
 
-// stripInlineComments removes single-line comments that start with # or // from each line.
-func stripInlineComments(lines []string) []string {
-	stripped := make([]string, len(lines))
-	for i, line := range lines {
+func stripComments(text string) string {
+	var result strings.Builder
+	// Track if we're inside a block comment
+	inBlockComment := false
+
+	for _, line := range strings.Split(text, "\n") {
 		// Track if we're inside a string literal
 		inString := false
-		// Character used to open the string literal
 		inStringChar := byte(0)
-		var strippedLine strings.Builder
+		// Track if we're inside an inline comment
+		inInlineComment := false
+		var lineBuilder strings.Builder
 
-		for j := 0; j < len(line); j++ {
-			char := line[j]
+		for i := 0; i < len(line); i++ {
+			char := line[i]
 
 			// Handle string literals
 			if char == '"' || char == '\'' {
@@ -283,64 +279,44 @@ func stripInlineComments(lines []string) []string {
 
 			// Only process comments if we're not inside a string literal
 			if !inString {
-				if char == '#' || (char == '/' && j+1 < len(line) && line[j+1] == '/') {
-					// Found a comment, stop processing this line
-					break
+				// Check for inline comment start
+				if !inInlineComment && !inBlockComment {
+					if char == '#' {
+						inInlineComment = true
+					} else if char == '/' && i+1 < len(line) && line[i+1] == '/' {
+						inInlineComment = true
+						i++ // Skip the second '/'
+					}
+				}
+
+				// Check for block comment start/end if not in inline comment
+				if !inInlineComment {
+					if !inBlockComment && char == '/' && i+1 < len(line) && line[i+1] == '*' {
+						// Found the start of a block comment
+						inBlockComment = true
+						i++ // Skip the '*'
+						continue
+					}
+
+					if inBlockComment && char == '*' && i+1 < len(line) && line[i+1] == '/' {
+						// Found the end of a block comment
+						inBlockComment = false
+						i++ // Skip the '/'
+						continue
+					}
 				}
 			}
 
-			strippedLine.WriteByte(char)
-		}
-
-		stripped[i] = strippedLine.String()
-	}
-	return stripped
-}
-
-// stripBlockComments removes block comments that start with /* and end with */ from a given string.
-func stripBlockComments(text string) string {
-	var stripped strings.Builder
-	// Track if we're inside a string literal
-	inString := false
-	// Character used to open the string literal
-	inStringChar := byte(0)
-	// Track if we're inside a block comment
-	inBlockComment := false
-
-	for i := 0; i < len(text); i++ {
-		char := text[i]
-
-		// Handle string literals
-		if char == '"' || char == '\'' {
-			if !inString {
-				inString = true
-				inStringChar = char
-			} else if inStringChar == char {
-				inString = false
+			// Only write characters that are not in any type of comment
+			if !inBlockComment && !inInlineComment {
+				lineBuilder.WriteByte(char)
 			}
 		}
 
-		// Only process comments if we're not inside a string literal
-		if !inString {
-			if !inBlockComment && char == '/' && i+1 < len(text) && text[i+1] == '*' {
-				// Found the start of a block comment
-				inBlockComment = true
-				i++ // Skip the '*'
-				continue
-			}
-
-			if inBlockComment && char == '*' && i+1 < len(text) && text[i+1] == '/' {
-				// Found the end of a block comment
-				inBlockComment = false
-				i++ // Skip the '/'
-				continue
-			}
-		}
-
-		if !inBlockComment {
-			stripped.WriteByte(char)
-		}
+		// Add the processed line to the result
+		result.WriteString(lineBuilder.String())
+		result.WriteByte('\n')
 	}
 
-	return stripped.String()
+	return result.String()
 }
