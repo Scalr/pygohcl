@@ -30,9 +30,13 @@ type converter struct {
 func (c *converter) rangeSource(r hcl.Range) string {
 	data := string(c.bytes[r.Start.Byte:r.End.Byte])
 
-	lines := stripInlineComments(strings.Split(data, "\n"))
-	data = stripBlockComments(strings.Join(lines, " "))
+	// First process block comments
+	data = stripBlockComments(data)
 
+	// Then process inline comments
+	lines := stripInlineComments(strings.Split(data, "\n"))
+
+	data = strings.Join(lines, " ")
 	data = strings.Join(strings.Fields(data), " ")
 	return data
 }
@@ -300,6 +304,8 @@ func stripBlockComments(text string) string {
 	inString := false
 	// Character used to open the string literal
 	inStringChar := byte(0)
+	// Track if we're inside a block comment
+	inBlockComment := false
 
 	for i := 0; i < len(text); i++ {
 		char := text[i]
@@ -316,18 +322,24 @@ func stripBlockComments(text string) string {
 
 		// Only process comments if we're not inside a string literal
 		if !inString {
-			if char == '/' && i+1 < len(text) && text[i+1] == '*' {
+			if !inBlockComment && char == '/' && i+1 < len(text) && text[i+1] == '*' {
 				// Found the start of a block comment
-				end := strings.Index(text[i:], "*/")
-				if end == -1 {
-					break
-				}
-				i += end + 1
+				inBlockComment = true
+				i++ // Skip the '*'
+				continue
+			}
+
+			if inBlockComment && char == '*' && i+1 < len(text) && text[i+1] == '/' {
+				// Found the end of a block comment
+				inBlockComment = false
+				i++ // Skip the '/'
 				continue
 			}
 		}
 
-		stripped.WriteByte(char)
+		if !inBlockComment {
+			stripped.WriteByte(char)
+		}
 	}
 
 	return stripped.String()
