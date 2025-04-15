@@ -30,6 +30,7 @@ type converter struct {
 func (c *converter) rangeSource(r hcl.Range) string {
 	data := string(c.bytes[r.Start.Byte:r.End.Byte])
 	data = stripComments(data)
+	data = strings.ReplaceAll(data, "\n", " ")
 	data = strings.Join(strings.Fields(data), " ")
 	return data
 }
