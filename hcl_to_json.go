@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	hcl "github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/zclconf/go-cty/cty"
 	ctyconvert "github.com/zclconf/go-cty/cty/convert"
@@ -29,6 +29,7 @@ type converter struct {
 
 func (c *converter) rangeSource(r hcl.Range) string {
 	data := string(c.bytes[r.Start.Byte:r.End.Byte])
+	data = stripComments(data)
 	data = strings.ReplaceAll(data, "\n", " ")
 	data = strings.Join(strings.Fields(data), " ")
 	return data
@@ -249,4 +250,74 @@ func (c *converter) convertUnary(v *hclsyntax.UnaryOpExpr) (interface{}, error) 
 		return nil, err
 	}
 	return ctyjson.SimpleJSONValue{Value: val}, nil
+}
+
+func stripComments(text string) string {
+	var result strings.Builder
+	// Track if we're inside a block comment
+	inBlockComment := false
+
+	for _, line := range strings.Split(text, "\n") {
+		// Track if we're inside a string literal
+		inString := false
+		inStringChar := byte(0)
+		// Track if we're inside an inline comment
+		inInlineComment := false
+		var lineBuilder strings.Builder
+
+		for i := 0; i < len(line); i++ {
+			char := line[i]
+
+			// Handle string literals
+			if char == '"' || char == '\'' {
+				if !inString {
+					inString = true
+					inStringChar = char
+				} else if inStringChar == char {
+					inString = false
+				}
+			}
+
+			// Only process comments if we're not inside a string literal
+			if !inString {
+				// Check for inline comment start
+				if !inInlineComment && !inBlockComment {
+					if char == '#' {
+						inInlineComment = true
+					} else if char == '/' && i+1 < len(line) && line[i+1] == '/' {
+						inInlineComment = true
+						i++ // Skip the second '/'
+					}
+				}
+
+				// Check for block comment start/end if not in inline comment
+				if !inInlineComment {
+					if !inBlockComment && char == '/' && i+1 < len(line) && line[i+1] == '*' {
+						// Found the start of a block comment
+						inBlockComment = true
+						i++ // Skip the '*'
+						continue
+					}
+
+					if inBlockComment && char == '*' && i+1 < len(line) && line[i+1] == '/' {
+						// Found the end of a block comment
+						inBlockComment = false
+						i++ // Skip the '/'
+						continue
+					}
+				}
+			}
+
+			// Only write characters that are not in any type of comment
+			if !inBlockComment && !inInlineComment {
+				lineBuilder.WriteByte(char)
+			}
+		}
+
+		// Add the processed line to the result
+		result.WriteString(lineBuilder.String())
+		result.WriteByte('\n')
+	}
+
+	return result.String()
 }
