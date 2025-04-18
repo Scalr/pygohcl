@@ -1,0 +1,29 @@
+name: Create Jira Tickets from Dependabot Security Alerts
+permissions:
+  contents: read
+  security-events: write
+on:
+  schedule:
+    - cron: '0 */6 * * *'  #Runs every 6 hours
+  workflow_dispatch:
+jobs:
+  create_ticket:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub Token
+        id: generate_token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{vars.SUDO_GHA_APP_ID}}
+          installation_id: ${{vars.SUDO_GHA_APP_INSTALLATION_ID}}
+          private_key: ${{secrets.SUDO_GHA_APP_PRIVATE_KEY}}
+
+      - name: Run Dependabot Alerts Checker
+        uses: Scalr/actions/dependabot-jira-ticket@master
+        with:
+          github_repository: ${{ github.repository }}
+          github_token: ${{ steps.generate_token.outputs.token }}
+          jira_token: ${{ secrets.JIRA_TOKEN }}
+          jira_user: ${{ vars.JIRA_USER }}
+          jira_host: ${{ vars.JIRA_HOST }}
+          jira_project: ${{ vars.JIRA_PROJECT }}
