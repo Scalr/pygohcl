@@ -18,8 +18,16 @@ jobs:
           installation_id: ${{vars.SUDO_GHA_APP_INSTALLATION_ID}}
           private_key: ${{secrets.SUDO_GHA_APP_PRIVATE_KEY}}
 
+      - name: Checkout Actions
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.generate_token.outputs.token }}
+          repository: Scalr/actions
+          path: actions
+          ref: master
+
       - name: Run Dependabot Alerts Checker
-        uses: Scalr/actions/dependabot-jira-ticket@master
+        uses: ./actions/dependabot-jira-ticket
         with:
           github_repository: ${{ github.repository }}
           github_token: ${{ steps.generate_token.outputs.token }}
