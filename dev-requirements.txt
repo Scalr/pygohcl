@@ -10,7 +10,7 @@ pycparser==2.21
 pyelftools==0.30
 pyparsing==3.1.1
 pytest==7.4.4
-setuptools==69.0.3
+setuptools==78.1.1
 six==1.16.0
 wcwidth==0.2.13
-zipp==3.17.0
+zipp==3.21.0
