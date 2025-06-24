@@ -6,7 +6,7 @@ Python wrapper for [hashicorp/hcl](https://github.com/hashicorp/hcl) (v2).
 
 ## Requirements
 
-The following versions are supported - 3.8, 3.9, 3.10, 3.11, 3.12, 3.13.
+The following versions are supported - 3.9, 3.10, 3.11, 3.12, 3.13.
 
 ## Setup
 
