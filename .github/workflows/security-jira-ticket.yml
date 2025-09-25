@@ -1,4 +1,4 @@
-name: Create Jira Tickets from Dependabot Security Alerts
+name: Create Jira Tickets from Security Alerts
 permissions:
   contents: read
   security-events: write
@@ -26,8 +26,8 @@ jobs:
           path: actions
           ref: master
 
-      - name: Run Dependabot Alerts Checker
-        uses: ./actions/dependabot-jira-ticket
+      - name: Run Security Alerts Checker
+        uses: ./actions/security-jira-ticket
         with:
           github_repository: ${{ github.repository }}
           github_token: ${{ steps.generate_token.outputs.token }}
