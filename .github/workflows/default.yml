@@ -83,7 +83,7 @@ jobs:
           CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
           CIBW_BEFORE_BUILD: sh pre-build-command.sh
           CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}*
-          CIBW_SKIP: "pp* *-musllinux*"
+          CIBW_SKIP: "*-musllinux*"
           CIBW_ARCHS_LINUX: ${{ matrix.buildplat[2] }}
 
       - name: Build wheels on macos
@@ -93,7 +93,7 @@ jobs:
           CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
           CIBW_BEFORE_BUILD: sh pre-build-command.sh
           CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}*
-          CIBW_SKIP: "pp* *-musllinux*"
+          CIBW_SKIP: "*-musllinux*"
           CIBW_ARCHS_MACOS: ${{ matrix.buildplat[2] }}
 
       - uses: actions/upload-artifact@v4
