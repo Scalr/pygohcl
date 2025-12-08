@@ -24,7 +24,9 @@ case $ARCH in
     *arm64)   ARCH="arm64" ;;
     *aarch64) ARCH="arm64" ;;
 esac
-curl "https://storage.googleapis.com/golang/go1.23.9.${OS}-${ARCH}.tar.gz" --silent --location | tar -xz
+
+set -eo pipefail
+curl --fail --silent --show-error --location "https://storage.googleapis.com/golang/go1.23.9.${OS}-${ARCH}.tar.gz" | tar -xz
 export PATH="$(pwd)/go/bin:$PATH"
 
 echo "OS: $(uname -a)"
