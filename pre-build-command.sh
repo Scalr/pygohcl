@@ -26,7 +26,7 @@ case $ARCH in
 esac
 
 set -eo pipefail
-curl --fail --silent --show-error --location "https://storage.googleapis.com/golang/go1.23.9.${OS}-${ARCH}.tar.gz" | tar -xz
+curl --fail --silent --location "https://go.dev/dl/go1.23.4.${OS}-${ARCH}.tar.gz" | tar -xz
 export PATH="$(pwd)/go/bin:$PATH"
 
 echo "OS: $(uname -a)"
