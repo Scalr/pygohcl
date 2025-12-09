@@ -3,9 +3,7 @@
 import os
 import sys
 
-from setuptools import setup, find_packages
-from setuptools import Extension
-
+from setuptools import Extension, find_packages, setup
 
 os.chdir(os.path.dirname(sys.argv[0]) or ".")
 
@@ -25,11 +23,12 @@ setup(
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         "License :: OSI Approved :: MIT License",
     ],
     packages=find_packages(),
-    install_requires=["cffi>=1.17.0"],
-    setup_requires=["cffi>=1.17.0", "setuptools-golang", "setuptools_scm"],
+    install_requires=["cffi>=2.0.0"],
+    setup_requires=["cffi>=2.0.0", "setuptools-golang", "setuptools_scm"],
     build_golang={"root": "github.com/Scalr/pygohcl"},
     ext_modules=[Extension("pygohcl", ["pygohcl.go"])],
     cffi_modules=["pygohcl/build_cffi.py:ffi",],
