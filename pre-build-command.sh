@@ -26,10 +26,10 @@ case $ARCH in
 esac
 
 set -eo pipefail
-curl --fail --silent --location "https://go.dev/dl/go1.23.4.${OS}-${ARCH}.tar.gz" | tar -xz
+curl --fail --silent --location "https://go.dev/dl/go1.25.5.${OS}-${ARCH}.tar.gz" | tar -xz
 export PATH="$(pwd)/go/bin:$PATH"
 
 echo "OS: $(uname -a)"
-echo "GO=go1.23.9.${OS}-${ARCH}.tar.gz"
-echo "ARCH=$ARCH"
-echo "PATH=$PATH"
+echo "GO: $(go version)"
+echo "ARCH: $ARCH"
+echo "PATH: $PATH"
