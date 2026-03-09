@@ -103,7 +103,6 @@ jobs:
         uses: pypa/cibuildwheel@v3.3.1
         env:
           CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
-          CIBW_BEFORE_BUILD: sh pre-build-command.sh
           CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}*
 
       - uses: actions/upload-artifact@v4
