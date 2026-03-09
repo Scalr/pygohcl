@@ -1,9 +1,13 @@
 package main
 
-// typedef struct {
-// char *json;
-// char *err;
-// } parseResponse;
+/*
+#include <stdlib.h>
+
+typedef struct {
+char *json;
+char *err;
+} parseResponse;
+*/
 import "C"
 import (
 	"encoding/json"
@@ -22,8 +26,8 @@ import (
 )
 
 //export FreePtr
-func FreePtr(ptr unsafe.Pointer) {
-	C.free(ptr)
+func FreePtr(ptr *C.char) {
+	C.free(unsafe.Pointer(ptr))
 }
 
 //export Parse
