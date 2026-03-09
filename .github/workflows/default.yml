@@ -104,7 +104,7 @@ jobs:
         env:
           CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
           CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}*
-          CIBW_ARCHS_WINDOWS: ${{ matrix.buildplat[2] }}
+          CIBW_ARCHS_WINDOWS: ${{ matrix.buildplat[2] == 'amd64' && 'AMD64' || 'ARM64' }}
           GOOS: windows
           GOARCH: ${{ matrix.buildplat[2] }}
           CGO_ENABLED: 1
