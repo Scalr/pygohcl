@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"unsafe"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/ext/tryfunc"
@@ -19,6 +20,11 @@ import (
 	"github.com/zclconf/go-cty/cty/function"
 	"github.com/zclconf/go-cty/cty/function/stdlib"
 )
+
+//export FreePtr
+func FreePtr(ptr unsafe.Pointer) {
+	C.free(ptr)
+}
 
 //export Parse
 func Parse(a *C.char, keepInterpFlag C.int) (resp C.parseResponse) {
