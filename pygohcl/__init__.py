@@ -43,13 +43,13 @@ def loadb(data: bytes, keep_interpolations: bool = False) -> tp.Dict:
     ret = lib.Parse(s, int(keep_interpolations))
     if ret.err != ffi.NULL:
         err: bytes = ffi.string(ret.err)
-        ffi.gc(ret.err, lib.free)
+        ffi.gc(ret.err, lib.FreePtr)
         err = err.decode("utf8")
         if "invalid HCL:" in err:
             raise HCLParseError(err)
         raise HCLInternalError(err)
     ret_json = ffi.string(ret.json)
-    ffi.gc(ret.json, lib.free)
+    ffi.gc(ret.json, lib.FreePtr)
     return json.loads(ret_json)
 
 
@@ -84,11 +84,11 @@ def attributes_loadb(data: bytes) -> tp.Dict:
     ret = lib.ParseAttributes(s)
     if ret.err != ffi.NULL:
         err: bytes = ffi.string(ret.err)
-        ffi.gc(ret.err, lib.free)
+        ffi.gc(ret.err, lib.FreePtr)
         err = err.decode("utf8")
         raise HCLParseError(err)
     ret_json = ffi.string(ret.json)
-    ffi.gc(ret.json, lib.free)
+    ffi.gc(ret.json, lib.FreePtr)
     return json.loads(ret_json)
 
 
@@ -137,7 +137,7 @@ def eval_var_condition(
     ret = lib.EvalValidationRule(c, e, n, v)
     if ret != ffi.NULL:
         err: bytes = ffi.string(ret)
-        ffi.gc(ret, lib.free)
+        ffi.gc(ret, lib.FreePtr)
         err = err.decode("utf8")
         if "Call to unknown function" in err:
             raise UnknownFunctionError(err)
