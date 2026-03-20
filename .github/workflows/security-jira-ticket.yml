@@ -9,6 +9,7 @@ on:
 jobs:
   create_ticket:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'Scalr'
     steps:
       - name: Generate GitHub Token
         id: generate_token
