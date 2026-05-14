@@ -18,7 +18,6 @@ setup(
     author_email="l.archer@scalr.com",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
@@ -31,5 +30,7 @@ setup(
     setup_requires=["cffi>=2.0.0", "setuptools-golang", "setuptools_scm"],
     build_golang={"root": "github.com/Scalr/pygohcl"},
     ext_modules=[Extension("pygohcl", ["pygohcl.go"])],
-    cffi_modules=["pygohcl/build_cffi.py:ffi",],
+    cffi_modules=[
+        "pygohcl/build_cffi.py:ffi",
+    ],
 )
