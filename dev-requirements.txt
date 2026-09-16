@@ -1,6 +1,6 @@
 attrs==26.1.0
 auditwheel==6.6.0
-cffi==2.0.0
+cffi==2.1.1
 importlib-metadata==9.0.0
 more-itertools==11.0.2
 packaging==26.2
