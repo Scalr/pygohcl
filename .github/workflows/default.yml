@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14", "3.15"]
     steps:
       - uses: actions/checkout@v3
 
@@ -25,6 +25,8 @@ jobs:
           cache: pip
           cache-dependency-path: dev-requirements.txt
           check-latest: true
+          # Needed while 3.15 is still a release candidate.
+          allow-prereleases: true
 
       - name: Set up Go
         uses: actions/setup-go@v3
@@ -63,7 +65,7 @@ jobs:
           - [macos-15, macosx, x86_64]
           - [macos-26, macosx, arm64]
           - [windows-latest, win_amd64, AMD64]
-        python: ["cp310", "cp311", "cp312", "cp313", "cp314"]
+        python: ["cp310", "cp311", "cp312", "cp313", "cp314", "cp315"]
 
     steps:
       - name: Checkout
@@ -79,7 +81,7 @@ jobs:
 
       - name: Build wheels on linux
         if: ${{ matrix.buildplat[1] == 'manylinux' }}
-        uses: pypa/cibuildwheel@v3.3.1
+        uses: pypa/cibuildwheel@v4.2.1
         env:
           CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
           CIBW_BEFORE_BUILD: sh pre-build-command.sh
@@ -89,7 +91,7 @@ jobs:
 
       - name: Build wheels on macos
         if: ${{ matrix.buildplat[1] == 'macosx' }}
-        uses: pypa/cibuildwheel@v3.3.1
+        uses: pypa/cibuildwheel@v4.2.1
         env:
           CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
           CIBW_BEFORE_BUILD: sh pre-build-command.sh
@@ -99,10 +101,12 @@ jobs:
 
       - name: Build wheels on windows
         if: ${{ runner.os == 'Windows' }}
-        uses: pypa/cibuildwheel@v3.3.1
+        uses: pypa/cibuildwheel@v4.2.1
         env:
           CIBW_ENVIRONMENT: PATH=$(pwd)/go/bin:$PATH
           CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}*
+          # cibuildwheel 4.x runs delvewheel by default on Windows; keep the previous behaviour of shipping the wheel as built.
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
 
       - uses: actions/upload-artifact@v4
         with:
