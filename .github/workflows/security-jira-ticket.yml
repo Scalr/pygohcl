@@ -32,7 +32,7 @@ jobs:
         with:
           github_repository: ${{ github.repository }}
           github_token: ${{ steps.generate_token.outputs.token }}
-          jira_token: ${{ secrets.JIRA_TOKEN }}
-          jira_user: ${{ vars.JIRA_USER }}
-          jira_host: ${{ vars.JIRA_HOST }}
+          jira_token: ${{ secrets.JIRA_SA_TOKEN }}
+          jira_user: ${{ vars.JIRA_SA_EMAIL }}
+          jira_host: ${{ vars.JIRA_API_HOST }}
           jira_project: ${{ vars.JIRA_PROJECT }}
